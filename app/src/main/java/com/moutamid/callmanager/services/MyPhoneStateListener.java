@@ -23,41 +23,52 @@ public class MyPhoneStateListener extends PhoneStateListener {
         this.context = context;
     }
 
-
     @Override
     public void onCallStateChanged(int state, String incomingNumber) {
         super.onCallStateChanged(state, incomingNumber);
         Log.d(TAG, "onCallStateChanged: STATE " + state);
-        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         switch (state) {
             case TelephonyManager.CALL_STATE_IDLE:
+                maxAudio();
+                break;
             case TelephonyManager.CALL_STATE_OFFHOOK:
+                maxAudio();
+                break;
             case TelephonyManager.CALL_STATE_RINGING:
-                Log.d(TAG, "onCallStateChanged: " + incomingNumber);
-                Log.d(TAG, "BOOOLLL : " + isWithinTimeWindow(incomingNumber));
                 if (isWithinTimeWindow(incomingNumber)) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
-                    } else {
-                        audioManager.adjustVolume(AudioManager.ADJUST_RAISE, AudioManager.FLAG_PLAY_SOUND);
-                    }
+                    maxAudio();
                 } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, audioManager.getStreamMinVolume(AudioManager.STREAM_MUSIC), 0);
-                    } else {
-                        audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_PLAY_SOUND);
-                    }
+                    minAudio();
                 }
                 break;
         }
+    }
 
+    private void minAudio() {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamMinVolume(AudioManager.STREAM_RING), 0);
+        } else {
+            audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_PLAY_SOUND);
+        }
+    }
+
+    private void maxAudio() {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamMaxVolume(AudioManager.STREAM_RING), 0);
+        } else {
+            audioManager.adjustVolume(AudioManager.ADJUST_RAISE, AudioManager.FLAG_PLAY_SOUND);
+        }
     }
 
     private boolean isWithinTimeWindow(String incomingNumber) {
-        ArrayList<ContactModel> list = Stash.getArrayList(Constants.CONTACTS, ContactModel.class);
-        for (ContactModel model : list) {
-            if (model.getContactNumber().contains(incomingNumber)) {
-                return true;
+        if (!incomingNumber.isEmpty()){
+            ArrayList<ContactModel> list = Stash.getArrayList(Constants.CONTACTS, ContactModel.class);
+            for (ContactModel model : list) {
+                if (model.getContactNumber().contains(incomingNumber)) {
+                    return true;
+                }
             }
         }
         return false;

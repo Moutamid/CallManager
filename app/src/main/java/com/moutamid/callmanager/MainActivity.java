@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_CONTACTS,
             Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS,
     };
 
     @Override
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
             shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS);
             shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CALL_LOG);
             shouldShowRequestPermissionRationale(android.Manifest.permission.READ_PHONE_STATE);
+            shouldShowRequestPermissionRationale(android.Manifest.permission.MODIFY_AUDIO_SETTINGS);
             ActivityCompat.requestPermissions(MainActivity.this, permissions, 1);
         }
     }
@@ -104,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean check() {
         return ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.MODIFY_AUDIO_SETTINGS) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED;
     }
 
