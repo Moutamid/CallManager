@@ -37,7 +37,7 @@ public class MissedCallReceiver extends BroadcastReceiver {
         if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)){
             String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             Log.d(TAG, "onReceive: numberrr  " + number);
-
+            minAudio();
             if (number != null){
                 if (isWithinTimeWindow(number)) {
                     maxAudio();
