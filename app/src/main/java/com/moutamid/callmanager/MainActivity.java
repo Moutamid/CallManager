@@ -90,6 +90,17 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ContactsAdapter(this, list);
         Log.d("CHECK123", "SIZE " + list.size());
         binding.contactRc.setAdapter(adapter);
+
+        binding.add.setOnClickListener(v -> {
+            if (binding.custom.getText().toString().isEmpty()){
+                Toast.makeText(this, "Number is Empty", Toast.LENGTH_SHORT).show();
+            } else {
+                list.add(new ContactModel("Custom Contact", binding.custom.getText().toString().trim()));
+                Stash.put(Constants.CONTACTS, list);
+                list.sort(Comparator.comparing(ContactModel::getContactName));
+                adapter.notifyDataSetChanged();
+            }
+        });
         
     }
 

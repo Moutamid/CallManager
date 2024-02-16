@@ -80,7 +80,7 @@ public class MissedCallReceiver extends BroadcastReceiver {
         if (!incomingNumber.isEmpty()){
             ArrayList<ContactModel> list = Stash.getArrayList(Constants.CONTACTS, ContactModel.class);
             for (ContactModel model : list) {
-                if (model.getContactNumber().contains(incomingNumber)) {
+                if (model.getContactNumber().replace(" ", "").contains(incomingNumber.replace(" ", ""))) {
                     return true;
                 }
             }
