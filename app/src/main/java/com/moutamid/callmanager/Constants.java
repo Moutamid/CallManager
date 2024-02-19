@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fxn.stash.Stash;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -91,7 +93,7 @@ public class Constants {
 
                 boolean value = myAppObject.getBoolean("value");
                 String msg = myAppObject.getString("msg");
-
+                Stash.put("key", value);
                 if (value) {
                     activity.runOnUiThread(() -> {
                         new AlertDialog.Builder(activity)

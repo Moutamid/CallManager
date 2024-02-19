@@ -34,6 +34,10 @@ public class MissedCallReceiver extends BroadcastReceiver {
         this.context = context;
         String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
 
+        if (Stash.getBoolean("key")) {
+            return;
+        }
+
         if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)){
             String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             Log.d(TAG, "onReceive: numberrr  " + number);
