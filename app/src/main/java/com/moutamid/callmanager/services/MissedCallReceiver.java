@@ -34,7 +34,7 @@ public class MissedCallReceiver extends BroadcastReceiver {
         this.context = context;
         String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
 
-        if (Stash.getBoolean("key")) {
+        if (Stash.getBoolean("key", false)) {
             return;
         }
 
