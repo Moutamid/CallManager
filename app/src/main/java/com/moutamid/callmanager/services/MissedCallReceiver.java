@@ -1,5 +1,6 @@
 package com.moutamid.callmanager.services;
 
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -38,18 +39,22 @@ public class MissedCallReceiver extends BroadcastReceiver {
             return;
         }
 
-        if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)){
+        NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+       // int previous_notification_interrupt_setting = notificationManager.getCurrentInterruptionFilter();
+        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL);
+
+        if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
             String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             Log.d(TAG, "onReceive: numberrr  " + number);
             minAudio();
             if (number != null){
+                Log.d(TAG, "onReceive: isWithinTimeWindow  " + isWithinTimeWindow(number));
                 if (isWithinTimeWindow(number)) {
                     maxAudio();
                 } else {
                     minAudio();
                 }
             }
-
         }
 
 /*        if (intent.getAction().equals("android.intent.action.PHONE_STATE")) {
@@ -65,8 +70,10 @@ public class MissedCallReceiver extends BroadcastReceiver {
     private void minAudio() {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamMinVolume(AudioManager.STREAM_RING), 0);
         } else {
+            audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_PLAY_SOUND);
         }
     }
@@ -74,8 +81,10 @@ public class MissedCallReceiver extends BroadcastReceiver {
     private void maxAudio() {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamMaxVolume(AudioManager.STREAM_RING), 0);
         } else {
+            audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             audioManager.adjustVolume(AudioManager.ADJUST_RAISE, AudioManager.FLAG_PLAY_SOUND);
         }
     }
