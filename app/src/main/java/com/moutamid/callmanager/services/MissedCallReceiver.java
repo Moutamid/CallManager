@@ -1,29 +1,20 @@
 package com.moutamid.callmanager.services;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
-import android.os.Bundle;
-import android.provider.Telephony;
-import android.telephony.PhoneStateListener;
-import android.telephony.SmsManager;
-import android.telephony.SmsMessage;
+import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.fxn.stash.Stash;
 import com.moutamid.callmanager.Constants;
 import com.moutamid.callmanager.models.ContactModel;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 public class MissedCallReceiver extends BroadcastReceiver {
     String TAG = "MyPhoneStateListener";
@@ -39,42 +30,33 @@ public class MissedCallReceiver extends BroadcastReceiver {
             return;
         }
 
-        NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-       // int previous_notification_interrupt_setting = notificationManager.getCurrentInterruptionFilter();
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL);
 
         if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
             String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             Log.d(TAG, "onReceive: numberrr  " + number);
             minAudio();
-            if (number != null){
+            if (number != null) {
                 Log.d(TAG, "onReceive: isWithinTimeWindow  " + isWithinTimeWindow(number));
                 if (isWithinTimeWindow(number)) {
                     maxAudio();
+                    new Handler().postDelayed(this::minAudio, 40000);
                 } else {
                     minAudio();
                 }
             }
         }
-
-/*        if (intent.getAction().equals("android.intent.action.PHONE_STATE")) {
-            Log.d(TAG, "onReceive CALL");
-            if(listener == null){
-                listener = new MyPhoneStateListener(context);
-            }
-            TelephonyManager telephony = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
-            telephony.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
-        }*/
     }
 
     private void minAudio() {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamMinVolume(AudioManager.STREAM_RING), 0);
+            audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
         } else {
-            audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_PLAY_SOUND);
+            audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
         }
     }
 
@@ -90,7 +72,7 @@ public class MissedCallReceiver extends BroadcastReceiver {
     }
 
     private boolean isWithinTimeWindow(String incomingNumber) {
-        if (!incomingNumber.isEmpty()){
+        if (!incomingNumber.isEmpty()) {
             ArrayList<ContactModel> list = Stash.getArrayList(Constants.CONTACTS, ContactModel.class);
             for (ContactModel model : list) {
                 if (model.getContactNumber().replace(" ", "").contains(incomingNumber.replace(" ", ""))) {
