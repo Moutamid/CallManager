@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -50,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
         notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-        askPermissions();
-
         list = Stash.getArrayList(Constants.CONTACTS, ContactModel.class);
         list.sort(Comparator.comparing(ContactModel::getContactName));
 
@@ -69,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        binding.switchActive.setChecked(Stash.getBoolean("activate", false));
+
         binding.delete.setOnClickListener(v -> {
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Delete Contacts")
@@ -83,8 +84,17 @@ public class MainActivity extends AppCompatActivity {
                     .show();
         });
 
+        binding.switchActive.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Stash.put("activate", isChecked);
+            }
+        });
+
         binding.selectAll.setOnClickListener(v -> {
-            if (!notificationManager.isNotificationPolicyAccessGranted()) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://lastindexof.com/callmanagerapp/"));
+            startActivity(intent);
+            /*if (!notificationManager.isNotificationPolicyAccessGranted()) {
                 Intent intent = new Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
                 startActivityForResult(intent, 1222);
             } else {
@@ -94,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     selectAll();
                 }
-            }
+            }*/
+
+
         });
 
         binding.contactRc.setLayoutManager(new LinearLayoutManager(this));
@@ -120,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        askPermissions();
         if (notificationManager.isNotificationPolicyAccessGranted())
             notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL);
     }
@@ -139,16 +152,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void askPermissions() {
-        if (check()) {
-            shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS);
-            shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CALL_LOG);
-            shouldShowRequestPermissionRationale(android.Manifest.permission.READ_PHONE_STATE);
-            shouldShowRequestPermissionRationale(android.Manifest.permission.MODIFY_AUDIO_SETTINGS);
-            ActivityCompat.requestPermissions(MainActivity.this, permissions, 1);
+        if (!notificationManager.isNotificationPolicyAccessGranted()) {
+            Intent intent = new Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+            startActivityForResult(intent, 1222);
         } else {
-            if (!notificationManager.isNotificationPolicyAccessGranted()) {
-                Intent intent = new Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
-                startActivityForResult(intent, 1222);
+            if (check()) {
+                shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CONTACTS);
+                shouldShowRequestPermissionRationale(android.Manifest.permission.READ_CALL_LOG);
+                shouldShowRequestPermissionRationale(android.Manifest.permission.READ_PHONE_STATE);
+                shouldShowRequestPermissionRationale(android.Manifest.permission.MODIFY_AUDIO_SETTINGS);
+                ActivityCompat.requestPermissions(MainActivity.this, permissions, 1);
             }
         }
     }
@@ -192,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 if (notificationManager.isNotificationPolicyAccessGranted()) {
                     selectAll();
                 } else {
-                    // Open Setting screen to ask for permisssion
+                    // Open Setting screen to ask for permission
                     Intent intent = new Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
                     startActivityForResult(intent, 1222);
                 }

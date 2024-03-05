@@ -30,20 +30,23 @@ public class MissedCallReceiver extends BroadcastReceiver {
             return;
         }
 
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL);
+        if (Stash.getBoolean("activate", false)) {
 
-        if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
-            String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
-            Log.d(TAG, "onReceive: numberrr  " + number);
-            minAudio();
-            if (number != null) {
-                Log.d(TAG, "onReceive: isWithinTimeWindow  " + isWithinTimeWindow(number));
-                if (isWithinTimeWindow(number)) {
-                    maxAudio();
-                    new Handler().postDelayed(this::minAudio, 40000);
-                } else {
-                    minAudio();
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL);
+
+            if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
+                String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                Log.d(TAG, "onReceive: numberrr  " + number);
+                minAudio();
+                if (number != null) {
+                    Log.d(TAG, "onReceive: isWithinTimeWindow  " + isWithinTimeWindow(number));
+                    if (isWithinTimeWindow(number)) {
+                        maxAudio();
+                        new Handler().postDelayed(this::minAudio, 40000);
+                    } else {
+                        minAudio();
+                    }
                 }
             }
         }
@@ -51,21 +54,17 @@ public class MissedCallReceiver extends BroadcastReceiver {
 
     private void minAudio() {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamMinVolume(AudioManager.STREAM_RING), 0);
-            audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
-        } else {
-            audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_PLAY_SOUND);
-            audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
-        }
+        audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
     }
 
     private void maxAudio() {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+          //  audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamMinVolume(AudioManager.STREAM_RING), 0);
             audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamMaxVolume(AudioManager.STREAM_RING), 0);
         } else {
+          //  audioManager.adjustVolume(AudioManager.ADJUST_LOWER, AudioManager.FLAG_PLAY_SOUND);
             audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
             audioManager.adjustVolume(AudioManager.ADJUST_RAISE, AudioManager.FLAG_PLAY_SOUND);
         }
